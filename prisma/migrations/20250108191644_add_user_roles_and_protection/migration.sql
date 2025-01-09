@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `canDelete` BOOLEAN NOT NULL DEFAULT true,
+    MODIFY `role` ENUM('SUPER_ROOT', 'ROOT', 'ADMIN', 'USER') NOT NULL;

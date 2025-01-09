@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  password   String
+  name       String
+  role       UserRole
+  status     String     @default("active")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  messages   Message[]
+  canDelete  Boolean    @default(true)
+  activities Activity[]
+}
+
+enum UserRole {
+  SUPER_ROOT
+  ROOT
+  ADMIN
+  USER
+}
+
+model Client {
+  id               String       @id @default(cuid())
+  code             String       @unique
+  name             String
+  password         String
+  phone            String?
+  address1         String?
+  address2         String?
+  balance          Float?       @default(0)
+  status           ClientStatus @default(ACTIVE)
+  planId           String?
+  plan             Plan?        @relation("ClientPlan", fields: [planId], references: [id])
+  packageId        String?
+  package          Package?     @relation(fields: [packageId], references: [id])
+  administeredPlan Plan?        @relation("PlanAdministrator")
+  familyMembers    Client[]     @relation("FamilyMembers")
+  familyHead       Client?      @relation("FamilyMembers", fields: [familyHeadId], references: [id])
+  familyHeadId     String?
+  movements        Movement[]
+  messages         Message[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  isAdministrator  Boolean      @default(false)
+  Ticket           Ticket[]
+
+  @@index([code])
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model Plan {
+  id              String     @id @default(cuid())
+  name            String
+  description     String?
+  type            PlanType?
+  price           Float?
+  maxMembers      Int?       @default(1)
+  status          PlanStatus @default(ACTIVE)
+  clients         Client[]   @relation("ClientPlan")
+  administratorId String?    @unique
+  administrator   Client?    @relation("PlanAdministrator", fields: [administratorId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+enum PlanType {
+  BASIC
+  PREMIUM
+  FAMILIAR
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
+model Package {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+  clients   Client[]
+}
+
+enum PackageType {
+  BRONZE
+  PRATA
+  OURO
+  DIAMANTE
+}
+
+enum PackageStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
+model Movement {
+  id        String   @id @default(uuid())
+  numdoc    String
+  tipodoc   String
+  cliente   String
+  entidate  String
+  desconto  String
+  datadoc   String
+  balance   Float
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MovementType {
+  CONSULTA
+  EXAME
+  INTERNACAO
+  PROCEDIMENTO
+}
+
+enum MovementStatus {
+  AGENDADO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  content       String
+  ticketId      String
+  ticket        Ticket   @relation(fields: [ticketId], references: [id])
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id])
+  response      String?
+  respondedById String?
+  respondedBy   User?    @relation(fields: [respondedById], references: [id])
+  status        String   @default("PENDING") // PENDING, ANSWERED
+  createdAt     DateTime @default(now())
+}
+
+enum MessageStatus {
+  PENDING
+  ANSWERED
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  type      String // PLAN_CREATED, PLAN_DELETED, PACKAGE_CREATED, etc
+  message   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entityId  String? // ID do plano, pacote ou cliente relacionado
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@map("activities")
+}
+
+model Ticket {
+  id        String    @id @default(cuid())
+  title     String
+  status    String    @default("OPEN") // OPEN, CLOSED
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

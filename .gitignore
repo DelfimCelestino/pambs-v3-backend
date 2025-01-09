@@ -1,0 +1,31 @@
+# .gitignore
+
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+
+# SSL files
+src/ssl/*.key
+src/ssl/*.crt
+dist/ssl/*.key
+dist/ssl/*.crt
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor folders
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
