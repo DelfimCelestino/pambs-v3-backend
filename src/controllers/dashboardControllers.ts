@@ -24,14 +24,14 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     startOfYear.setHours(0, 0, 0, 0);
 
     const rawMonthlyGrowth = await db.$queryRaw`
-      SELECT 
-        DATE_FORMAT(createdAt, '%Y-%m-01') as month,
-        COUNT(*) as total
-      FROM client
-      WHERE createdAt >= ${startOfYear}
-      GROUP BY DATE_FORMAT(createdAt, '%Y-%m')
-      ORDER BY month ASC
-    `;
+    SELECT 
+      DATE_FORMAT(createdAt, '%Y-%m-01') as month,
+      COUNT(*) as total
+    FROM client
+    WHERE createdAt >= ${startOfYear}
+    GROUP BY DATE_FORMAT(createdAt, '%Y-%m-01')
+    ORDER BY month ASC
+  `;
 
     // Converter BigInt para Number
     const monthlyGrowth = (rawMonthlyGrowth as any[]).map((item) => ({

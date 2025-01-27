@@ -267,6 +267,7 @@ export const getClientDashboard = async (req: Request, res: Response) => {
       id: client.id,
       name: client.name,
       code: client.code,
+      balance: client.balance,
       status: client.status,
       plan: client.plan,
       package: client.package,
